@@ -73,9 +73,20 @@ The user asked to push to `origin` (`git@github.com:wyim-pgl/MetaboAnalystR.git`
 6. `docs: add CLAUDE.md + install.md`
 7. `test: add example/ smoke-test harness and sample CSVs`
 
+## GitHub-issue fixes landed (after initial refactor)
+
+Additional patches resolving three long-standing issues quoted from the xia-lab upstream tracker:
+
+- **`FilterVariable` corrupting mSet in local mode** — `.set.mSet(mSetObj)` was called as a statement and its return value discarded; `return(1)`/`return(2)` then overwrote the caller's mSet with an integer. Now branches on `.on.public.web`: keeps the integer status return on web, returns `.set.mSet(mSetObj)` (= updated mSet) locally. See `R/general_proc_utils.R` around line 777.
+- **`CalculateQeaScore` failing with "'list' object cannot be coerced to type 'double'" (GH #335)** — `mSetObj$dataSet$cls` is a 1-row data.frame (a list) on some Read.TextData paths; the per-column `as.numeric(mSetObj$dataSet$cls)` inside `apply()` blew up. Normalize cls to a flat numeric vector once before the apply (via `unlist` → `as.character` → `as.numeric`, with a factor-code fallback for disc labels like `"KO"`/`"WT"`). Also fixed stale `class(tmp) == "try-error"` (broken in R ≥ 4.0 when `class()` returns a multi-element vector). See `R/enrich_path_stats.R` in `CalculateQeaScore`.
+- **`SanityCheckData` producing a confusing "problems in paired sample labels" error** — users uploading disc-style class labels in paired mode hit silent `as.numeric(labels) -> NA` coercion, and the downstream pair-integrity check then flagged the wrong cause. Now fails fast with an explicit error that names the expected format (signed pair-ID vector, e.g. `c(-1,-2,-3,1,2,3)`). See `R/general_proc_utils.R` in the paired branch of `SanityCheckData`.
+
 ## Known follow-up items (not done)
 
 - Upstream maintainers sync with the MetaboAnalyst web server (`.on.public.web = TRUE` paths). The smoke tests here only cover local mode. Before any upstream PR, ideally test the web variant — we don't have that environment.
 - `tests/testthat/*` pulls data from `metaboanalyst.ca` (network-dependent). Re-run those once in a network-enabled environment to confirm `InitDataObjects` signature change doesn't regress any test that used positional `default.dpi`.
 - `arrow` package is listed under optional Suggests; installing it requires system `libarrow` — currently unresolved in the `r453` env.
 - Eventual migration from `qs` (archived) to `qs2` (CRAN) can remove the stringfish pin. The `ov_qs_*` wrappers already prefer `qs2`; the blocker is `NAMESPACE`'s `importFrom(qs, …)` making `qs` an `Imports` dep. Once no wrapper needs the `qs::qread/qsave` fallback, drop those lines + drop `qs` from `DESCRIPTION`.
+- Two further GH issues were reported in the same session but not yet addressed:
+  - **`FC.Anal(..., paired = TRUE)` returns all-`NaN` with `colp` upload** — likely the same cls-shape issue as #335 manifesting in `GetFC`'s paired branch (`colMeans(G1 - G2)` where G1/G2 are subset by `which(cls == levels(cls)[1])`). Needs a reproducer CSV to verify the fix is sufficient.
+  - **`SanityCheckData` `NAs introduced by coercion` on the bundled `lcms_table.csv` example in paired mode** — the example CSV on metaboanalyst.ca may not include the pair-ID row the paired format actually requires. Needs the CSV in hand to confirm; the cleaner `SanityCheckData` error above will at least make the failure mode explicit.
