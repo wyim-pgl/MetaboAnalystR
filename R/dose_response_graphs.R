@@ -228,11 +228,11 @@ PlotDRHistogram <- function(mSetObj = NA,
                    colour = "white",
                    alpha  = 0.85) +
     {if (is.finite(s.pods["feat.20"]))
-        geom_vline(aes(xintercept = s.pods["feat.20"], colour = "gene20"), size = 1)} +
+        geom_vline(aes(xintercept = s.pods["feat.20"], colour = "gene20"), linewidth = 1)} +
     {if (is.finite(s.pods["mode"]))
-        geom_vline(aes(xintercept = s.pods["mode"], colour = "mode"), size = 1)} +
+        geom_vline(aes(xintercept = s.pods["mode"], colour = "mode"), linewidth = 1)} +
     {if (is.finite(s.pods["feat.10th"]))
-        geom_vline(aes(xintercept = s.pods["feat.10th"], colour = "percentile10th"), size = 1)} +
+        geom_vline(aes(xintercept = s.pods["feat.10th"], colour = "percentile10th"), linewidth = 1)} +
     scale_color_manual(
       name   = "mPOD",
       values = pod.cols,

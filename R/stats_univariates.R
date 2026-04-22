@@ -467,7 +467,7 @@ PlotTT <- function(mSetObj=NA, imgName, format="png", dpi=default.dpi, width=NA,
     scale_fill_gradient(low = low.fill, high = high.fill, na.value = "darkgrey", guide = "colourbar", name="-log(FDR.p)") +
     scale_size_continuous(range = c(1, 4), guide="none") + # Adjust size range as needed
     labs(x = GetVariableLabel(mSetObj$dataSet$type), y = "-log10(FDR.p)") +
-    geom_hline(yintercept = -log10(p.thresh), linetype = "dashed", color = "blue", size=0.5) # Add horizontal line at p-value threshold
+    geom_hline(yintercept = -log10(p.thresh), linetype = "dashed", color = "blue", linewidth = 0.5) # Add horizontal line at p-value threshold
 
   }else{
   p <- ggplot(tt_data, aes(x=seq, y=p_log, label=label, FDR=FDR, P.Value=P.Value)) +
@@ -477,7 +477,7 @@ PlotTT <- function(mSetObj=NA, imgName, format="png", dpi=default.dpi, width=NA,
     scale_fill_gradient(low = low.fill, high = high.fill, na.value = "darkgrey", guide = "colourbar", name="-log(raw.p)") +
     scale_size_continuous(range = c(1, 4), guide="none") + # Adjust size range as needed
     labs(x = GetVariableLabel(mSetObj$dataSet$type), y = "-log10(raw.p)") +
-    geom_hline(yintercept = -log10(p.thresh), linetype = "dashed", color = "blue", size=0.5) # Add horizontal line at p-value threshold
+    geom_hline(yintercept = -log10(p.thresh), linetype = "dashed", color = "blue", linewidth = 0.5) # Add horizontal line at p-value threshold
   }
   
   if (interactive) {

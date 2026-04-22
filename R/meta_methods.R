@@ -875,7 +875,7 @@ if(!exists('metastat.meta')){
 
   g <- ggplot(df1, aes(x = values)) +
     geom_line(aes(color = class, group = ind), stat = "density", alpha = 0.3) +
-    geom_line(aes(color = class), stat = "density", alpha = 0.6, size = 1.5) +
+    geom_line(aes(color = class), stat = "density", alpha = 0.6, linewidth = 1.5) +
     theme_bw()
 
   # Save static image
