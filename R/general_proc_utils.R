@@ -776,14 +776,24 @@ FilterVariable <- function(mSetObj=NA, qc.filter="F", rsd, var.filter="iqr", var
   
   ov_qs_save(int.mat, "data.filt.qs");
 
-  .set.mSet(mSetObj);
+  # If no missing data remains, also persist as data_proc.qs so the next
+  # step (Normalization) can pick it up without another replace-missing pass.
+  if (sum(is.na(int.mat)) == 0) {
+    ov_qs_save(int.mat, file = "data_proc.qs")
+  }
 
-  if(sum(is.na(int.mat)) > 0){
-    return(1);
-  }else{
-    # note here, if no missing data, need to save a copy for normalization
-    ov_qs_save(int.mat, file = "data_proc.qs");
-    return(2);
+  # Dual-mode return:
+  #   * web server (.on.public.web = TRUE) expects 1 (NA remaining) or 2 (clean)
+  #     as a status code, with the mSet committed via `mSetObj <<- ...`.
+  #   * local callers write `mSet <- FilterVariable(mSet, ...)` and expect the
+  #     updated mSet back. Previously the function only returned 1/2 in either
+  #     mode, silently overwriting the caller's mSet with an integer.
+  if (.on.public.web) {
+    .set.mSet(mSetObj);
+    if (sum(is.na(int.mat)) > 0) return(1)
+    return(2)
+  } else {
+    return(.set.mSet(mSetObj))
   }
 }
 
