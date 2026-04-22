@@ -2,9 +2,18 @@
 .Rhistory
 .RData
 .Ruserdata
-src/*.o
-src/*.so
-src/*.dll
+
+# Native build artifacts (including nested src/c and src/cpp)
+*.o
+*.so
+*.dll
+src/**/*.o
+src/**/*.so
+src/**/*.dll
+
+# Vignette build output
 vignettes/*.png
 vignettes/*.Rmd
-*.o
+
+# Smoke-test outputs from example/run_*.R
+example/out_*/
