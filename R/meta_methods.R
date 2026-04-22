@@ -6,7 +6,7 @@
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 CheckMetaDataConsistency <- function(mSetObj=NA, combat=TRUE) {
   
@@ -196,7 +196,7 @@ GetMetaProcMsg <- function(mSetObj=NA){
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 
 PerformEachDEAnal <- function(mSetObj=NA){
@@ -251,7 +251,7 @@ if(!exists('metastat.meta')){
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 
 PerformPvalCombination <- function(mSetObj=NA, method="stouffer", BHth=0.05){

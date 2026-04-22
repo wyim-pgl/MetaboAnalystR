@@ -713,7 +713,7 @@ Read.mzTab <- function(mSetObj=NA, filename, identifier = "name") {
 #'@author Jeff Xia \email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 
 Read.PeakList<-function(mSetObj=NA, foldername="upload"){

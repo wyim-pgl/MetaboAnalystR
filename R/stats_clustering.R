@@ -591,7 +591,7 @@ PlotSubHeatMap <- function(mSetObj=NA, imgName, format="png", dpi=default.dpi, w
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 #'
 PlotHeatMap <- function(mSetObj=NA, imgName, format="png", dpi=default.dpi, 
@@ -900,7 +900,7 @@ PlotHeatMap <- function(mSetObj=NA, imgName, format="png", dpi=default.dpi,
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 #'
 

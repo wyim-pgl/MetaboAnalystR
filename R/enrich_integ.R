@@ -985,7 +985,7 @@ GetKeggEntryMappingTable <- function(mSetObj=NA){
 #'License: GNU GPL (>= 2)
 #'@export
 #'@import igraph  
-#'@import qs
+#'@importFrom qs qread qsave
 PlotInmexPath <- function(mSetObj=NA, pathName, width=NA, height=NA, format="png", dpi=NULL){
   
   mSetObj <- .get.mSet(mSetObj);

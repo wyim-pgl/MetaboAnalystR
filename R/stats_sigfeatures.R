@@ -12,7 +12,7 @@
 #'License: GNU GPL (>= 2)
 #'@export
 #'@import siggenes
-#'@import qs
+#'@importFrom qs qread qsave
 SAM.Anal <- function(mSetObj=NA, method="d.stat", paired=FALSE, varequal=TRUE, delta=0, imgName, dpi=default.dpi){
 
   mSetObj <- .get.mSet(mSetObj);
@@ -144,7 +144,7 @@ PlotSAM.FDR <- function(mSetObj=NA, imgName, format="png", dpi, width=NA){
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
 #'@export
-#'@import qs
+#'@importFrom qs qread qsave
 
 PlotSAM.Cmpd <- function(mSetObj=NA, imgName, format="png", dpi, width=NA){
     mSetObj <- .get.mSet(mSetObj);
@@ -177,7 +177,7 @@ PlotSAM.Cmpd <- function(mSetObj=NA, imgName, format="png", dpi, width=NA){
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
 #'@export
-#'@import qs
+#'@importFrom qs qread qsave
 EBAM.Init <- function(mSetObj=NA, isPaired, isVarEq, nonPar, A0=-99, delta, imgA0, imgSig, dpi = default.dpi){
   mSetObj <- .get.mSet(mSetObj);
   if(isPaired){
@@ -260,7 +260,7 @@ EBAM.Init <- function(mSetObj=NA, isPaired, isVarEq, nonPar, A0=-99, delta, imgA
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 #'
 PlotEBAM.Cmpd<-function(mSetObj=NA, imgName, format="png", dpi, width=NA){

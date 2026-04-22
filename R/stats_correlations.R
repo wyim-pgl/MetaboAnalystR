@@ -339,7 +339,7 @@ if (grepl("^p-", cor.method) || grepl("^partial_", cor.method)) {
 #'@author Jeff Xia\email{jeff.xia@mcgill.ca}
 #'McGill University, Canada
 #'License: GNU GPL (>= 2)
-#'@import qs
+#'@importFrom qs qread qsave
 #'@export
 #'
 

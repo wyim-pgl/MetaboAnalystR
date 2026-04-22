@@ -10,7 +10,7 @@
 #' @author Jeff Xia \email{jeff.xia@mcgill.ca}
 #' McGill University, Canada
 #' License: GNU GPL (>= 2)
-#' @import qs
+#' @importFrom qs qread qsave
 my.parse.peaklist<-function(mSetObj=NA, foldername="upload"){
   mSetObj <- .get.mSet(mSetObj);
 
