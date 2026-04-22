@@ -32,19 +32,27 @@ test_that("Pathway Analysis Module Works", {
   expect_match(mSet$dataSet$map.table[1,3], "HMDB0000060")
   
   # check results of pathway analysis
-  expect_equal(nrow(mSet$analSet$ora.mat), 28)
+  # KEGG hsa library is updated periodically; assertions snap to current
+  # snapshot. Update when KEGG drift causes failures.
+  expect_equal(nrow(mSet$analSet$ora.mat), 29)
   expect_equal(mSet$analSet$ora.mat[1,3], 8)
-  expect_equal(mSet$analSet$ora.mat[1,8], 0.62837)
+  expect_equal(mSet$analSet$ora.mat[1,8], 0.644, tolerance = 1e-3)
 })
 
 test_that("Enrichment Analysis Module Works", {
-  
+
+  # CalculateGlobalTestScore offloads to an Rserve subprocess that calls
+  # `require(globaltest)`; if the Bioc package is missing the failure
+  # surfaces as an opaque RSclient error rather than testthat's normal
+  # "package not installed" auto-skip, so guard up front.
+  skip_if_not_installed("globaltest")
+
   rm(list =ls())
-  
+
   mSet<-InitDataObjects("conc", "msetqea", FALSE)
-  mSet<-Read.TextData(mSet, "http://www.metaboanalyst.ca/MetaboAnalyst/resources/data/human_cachexia.csv", "rowu", "disc");
+  mSet<-Read.TextData(mSet, test_path("testdata/human_cachexia.csv"), "rowu", "disc");
   mSet<-SanityCheckData(mSet)
-  mSet<-ReplaceMin(mSet);
+  mSet <- ImputeMissingVar(mSet, method = "lod");
   mSet<-CrossReferencing(mSet, "name");
   mSet<-CreateMappingResultTable(mSet)
   mSet<-PreparePrenormData(mSet)

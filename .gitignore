@@ -17,3 +17,14 @@ vignettes/*.Rmd
 
 # Smoke-test outputs from example/run_*.R
 example/out_*/
+
+# testthat side-effects: every analysis stage writes .qs / .csv / .png /
+# .RData / .mat / .rds files into the CWD where the test runs (which is
+# tests/testthat itself). The fixtures we keep are under testdata/.
+tests/testthat/*.qs
+tests/testthat/*.csv
+tests/testthat/*.png
+tests/testthat/*.RData
+tests/testthat/*.mat
+tests/testthat/*.rds
+!tests/testthat/testdata/

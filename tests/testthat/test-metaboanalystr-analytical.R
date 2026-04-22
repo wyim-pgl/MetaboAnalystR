@@ -5,9 +5,9 @@ library(MetaboAnalystR)
 test_that("Statistical Analysis Module Works", {
 
   mSet<-InitDataObjects("conc", "stat", FALSE)
-  mSet<-Read.TextData(mSet, "http://www.metaboanalyst.ca/MetaboAnalyst/resources/data/human_cachexia.csv", "rowu", "disc");
+  mSet<-Read.TextData(mSet, test_path("testdata/human_cachexia.csv"), "rowu", "disc");
   mSet<-SanityCheckData(mSet);
-  mSet<-ReplaceMin(mSet);
+  mSet <- ImputeMissingVar(mSet, method = "lod");
   mSet<-PreparePrenormData(mSet);
   mSet<-Normalization(mSet, "NULL", "LogNorm", "MeanCenter", "S10T0", ratio=FALSE, ratioNum=20)
   
@@ -32,9 +32,9 @@ test_that("Biomarker Analysis Module Works", {
   rm(list =ls())
   
   mSet<-InitDataObjects("conc", "roc", FALSE)
-  mSet<-Read.TextData(mSet, "http://www.metaboanalyst.ca/MetaboAnalyst/resources/data/plasma_nmr_new.csv", "rowu", "disc")
+  mSet<-Read.TextData(mSet, test_path("testdata/plasma_nmr_new.csv"), "rowu", "disc")
   mSet<-SanityCheckData(mSet)
-  mSet<-ReplaceMin(mSet)
+  mSet <- ImputeMissingVar(mSet, method = "lod")
   mSet<-PreparePrenormData(mSet);
   mSet<-IsSmallSmplSize(mSet)
   mSet<-Normalization(mSet, "NULL", "NULL", "NULL", ref=NULL, ratio=FALSE, ratioNum=20)
@@ -62,15 +62,22 @@ test_that("Biomarker Analysis Module Works", {
 })
 
 test_that("Multiple factors analysis", {
-  
+
+  # Covid_metabolomics_data.csv / Covid_metadata_multClass.csv used to be served
+  # at metaboanalyst.ca/MetaboAnalyst/resources/data/. Both endpoints now 404;
+  # the only remaining upstream artefact is a 332 MB raw-spectra zip
+  # (swath_dia_covid.zip) which is too large to bundle as test data and is
+  # not the same flat CSV format this test expects.
+  skip("Covid time-series sample data deprecated upstream (404)")
+
   rm(list =ls())
-  
+
   mSet<-InitDataObjects("pktable", "ts", FALSE)
   mSet<-SetDesignType(mSet, "multi")
   mSet<-Read.TextDataTs(mSet, "https://www.metaboanalyst.ca/MetaboAnalyst/resources/data/Covid_metabolomics_data.csv", "colu");
   mSet<-ReadMetaData(mSet, "https://www.metaboanalyst.ca/MetaboAnalyst/resources/data/Covid_metadata_multClass.csv");
   mSet<-SanityCheckData(mSet);
-  mSet<-ReplaceMin(mSet);
+  mSet <- ImputeMissingVar(mSet, method = "lod");
   mSet<-SanityCheckMeta(mSet, 1);
   mSet<-SetDataTypeOfMeta(mSet);
   mSet<-SanityCheckData(mSet);
@@ -109,9 +116,9 @@ test_that("Power Analysis Module Works", {
   rm(list =ls())
   
   mSet<-InitDataObjects("conc", "power", FALSE)
-  mSet<-Read.TextData(mSet, "http://www.metaboanalyst.ca/MetaboAnalyst/resources/data/human_cachexia.csv", "rowu", "disc");
+  mSet<-Read.TextData(mSet, test_path("testdata/human_cachexia.csv"), "rowu", "disc");
   mSet<-SanityCheckData(mSet);
-  mSet<-ReplaceMin(mSet);
+  mSet <- ImputeMissingVar(mSet, method = "lod");
   mSet<-PreparePrenormData(mSet);
   mSet<-Normalization(mSet, "NULL", "NULL", "NULL", "PIF_178", ratio=FALSE, ratioNum=20)
   
@@ -121,8 +128,11 @@ test_that("Power Analysis Module Works", {
   
   # check if right module
   expect_match(anal.type, "power")
-  expect_equal(mSet$analSet$power.mat[2,1], 0.004901929)
-  expect_equal(mSet$analSet$power.mat[1,1], 3)
+  # power.mat columns are c("Sample Size (per group)", "Predicted power").
+  # First row of the profile is sample size 3, predicted power ~0.0049.
+  # unname() strips the dimname so testthat 3's strict naming check passes.
+  expect_equal(unname(mSet$analSet$power.mat[1,1]), 3)
+  expect_equal(unname(mSet$analSet$power.mat[1,2]), 0.0049019, tolerance = 1e-5)
 })
 
 test_that("MS Peaks to Paths Module Works", {
@@ -132,7 +142,7 @@ test_that("MS Peaks to Paths Module Works", {
   mSet<-InitDataObjects("mass_all", "mummichog", FALSE)
   mSet<-SetPeakFormat(mSet, "mpt")
   mSet<-UpdateInstrumentParameters(mSet, 5.0, "negative", "yes", 0.02);
-  mSet<-Read.PeakListData(mSet, "http://www.metaboanalyst.ca/MetaboAnalyst/resources/data/mummichog_ibd.txt");
+  mSet<-Read.PeakListData(mSet, test_path("testdata/mummichog_ibd.txt"));
   mSet<-SetRTincluded(mSet, "no")
   mSet<-SanityCheckMummichogData(mSet)
   mSet<-SetPeakEnrichMethod(mSet, "mum", "v2")
