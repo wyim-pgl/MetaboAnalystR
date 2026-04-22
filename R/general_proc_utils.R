@@ -63,7 +63,7 @@ SanityCheckData <- function(mSetObj=NA){
       }
       
       pairs <- mSetObj$dataSet$pairs;
-      
+
       # check if QC samples are present
       qc.hits <- tolower(as.character(cls)) %in% "qc";
       if(sum(qc.hits) > 0){
@@ -72,8 +72,26 @@ SanityCheckData <- function(mSetObj=NA){
         AddErrMsg("Then re-upload your data (without QC samples) for paired analysis.");
         return(0);
       }else{
-        pairs <- as.numeric(pairs);
-      }  
+        # Paired analysis expects `pairs` to be a numeric vector of signed
+        # pair IDs (e.g. c(-1,-2,-3,1,2,3) — positive = group A, negative = group B,
+        # abs value matches the corresponding partner in the other group). Users
+        # who uploaded a disc-style character label row (e.g. "KO","WT") hit
+        # silent as.numeric() -> NA coercion and then got a confusing downstream
+        # error about "problems in paired sample labels". Fail fast with a
+        # clear message so they know the upload needs a pair-ID row, not the
+        # class-label row.
+        raw.pairs <- pairs
+        pairs <- suppressWarnings(as.numeric(pairs));
+        if (all(is.na(pairs))) {
+          AddErrMsg(paste0("<font color='red'>Error: paired analysis requires a numeric pair-ID vector (e.g. ",
+                           "c(-1,-2,-3,1,2,3) where sign indicates group and abs value matches the partner), ",
+                           "but the provided labels [", paste(utils::head(raw.pairs, 6), collapse = ", "),
+                           ", ...] could not be coerced to numeric. Provide numeric pair IDs via ",
+                           "mSetObj$dataSet$pairs or use the paired-upload CSV format with pair IDs ",
+                           "in the second row (not class labels).</font>"));
+          return(0);
+        }
+      }
       
       label <- as.numeric(pairs);
       cls <- as.factor(ifelse(label>0,1,0));
