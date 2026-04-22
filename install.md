@@ -24,7 +24,14 @@ sudo apt install -y \
 
 ### macOS (Homebrew)
 
-Install Xcode Command Line Tools and Homebrew first, then:
+**Turnkey option** — a single script that walks through all of steps 1–7 below (`brew` system libs + R + RStudio + CRAN/Bioc deps + `qs` pin + clone + install + smoke test):
+
+```bash
+git clone https://github.com/wyim-pgl/MetaboAnalystR.git && \
+  bash MetaboAnalystR/example/bootstrap_macos_brew.sh
+```
+
+Or step-by-step (recommended if you already have parts of the stack). Install Xcode Command Line Tools and Homebrew first, then:
 
 ```bash
 # Core toolchain + system libs that CRAN/Bioc sources need at build time
