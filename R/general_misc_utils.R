@@ -83,33 +83,30 @@ RemoveDuplicates <- function(data, lvlOpt="mean", quiet=T){
 # below — do not re-define them elsewhere.
 # =============================================================================
 
+# Sibling path under the alternate qs/qs2 extension; NA if `file` is neither.
+.qs_alt <- function(file) {
+  ext  <- tolower(tools::file_ext(file))
+  stem <- tools::file_path_sans_ext(file)
+  if (ext == "qs")       paste0(stem, ".qs2")
+  else if (ext == "qs2") paste0(stem, ".qs")
+  else                   NA_character_
+}
+
+# Try qs2 first — handles both genuine .qs2 files and qs2-format payloads
+# written under the .qs name (ov_qs_save does that when qs2 is available).
+# Fall back to legacy qs::qread on failure or when qs2 is unavailable.
+.qs_try_read <- function(file, ...) {
+  if (requireNamespace("qs2", quietly = TRUE)) {
+    r <- try(qs2::qs_read(file, ...), silent = TRUE)
+    if (!inherits(r, "try-error")) return(r)
+  }
+  qs::qread(file, ...)
+}
+
 ov_qs_read <- function(file, ...) {
-  if (file.exists(file)) {
-    if (requireNamespace("qs2", quietly = TRUE)) {
-      r <- try(qs2::qs_read(file, ...), silent = TRUE)
-      if (!inherits(r, "try-error")) return(r)
-    }
-    return(qs::qread(file, ...))
-  }
-  if (endsWith(tolower(file), ".qs")) {
-    v2 <- paste0(substr(file, 1, nchar(file) - 3L), ".qs2")
-    if (file.exists(v2)) {
-      if (requireNamespace("qs2", quietly = TRUE)) {
-        r <- try(qs2::qs_read(v2, ...), silent = TRUE)
-        if (!inherits(r, "try-error")) return(r)
-      }
-      return(qs::qread(v2, ...))
-    }
-  } else if (endsWith(tolower(file), ".qs2")) {
-    v1 <- paste0(substr(file, 1, nchar(file) - 4L), ".qs")
-    if (file.exists(v1)) {
-      if (requireNamespace("qs2", quietly = TRUE)) {
-        r <- try(qs2::qs_read(v1, ...), silent = TRUE)
-        if (!inherits(r, "try-error")) return(r)
-      }
-      return(qs::qread(v1, ...))
-    }
-  }
+  if (file.exists(file)) return(.qs_try_read(file, ...))
+  alt <- .qs_alt(file)
+  if (!is.na(alt) && file.exists(alt)) return(.qs_try_read(alt, ...))
   stop("ov_qs_read: neither .qs2 nor .qs found for: ", file, call. = FALSE)
 }
 
@@ -126,25 +123,29 @@ ov_qs_save <- function(obj, file, ...) {
 
 ov_qs_exists <- function(file) {
   if (file.exists(file)) return(TRUE)
-  if (endsWith(tolower(file), ".qs"))  return(file.exists(paste0(substr(file, 1, nchar(file) - 3L), ".qs2")))
-  if (endsWith(tolower(file), ".qs2")) return(file.exists(paste0(substr(file, 1, nchar(file) - 4L), ".qs")))
-  FALSE
+  alt <- .qs_alt(file)
+  !is.na(alt) && file.exists(alt)
 }
 
 # =============================================================================
 # RSclient subprocess execution (Rserve fork — shared by Public and Pro)
 # =============================================================================
 
-# Ship the package-level ov_qs_* helpers into an RSclient subprocess. The
-# subprocess is a fresh R session and does not inherit master-session helpers;
-# we reset each function's environment to globalenv() before serialization so
-# deserialization on the remote side is not tied to this package's namespace.
+# Ship the package-level ov_qs_* helpers (and their internal deps) into an
+# RSclient subprocess. The subprocess is a fresh R session and does not
+# inherit master-session helpers; we reset each function's environment to
+# globalenv() so the remote side resolves siblings via lexical scoping after
+# we list2env() them all there. environment(f) <- ... is copy-on-modify so
+# the master's bindings stay intact. Shipped in one RS.eval round-trip.
 .inject_qs_helpers <- function(conn) {
-  for (nm in c("ov_qs_read", "ov_qs_save", "ov_qs_exists")) {
-    f <- get(nm, envir = environment(.inject_qs_helpers), inherits = TRUE)
-    environment(f) <- globalenv()
-    RSclient::RS.assign(conn, nm, f)
-  }
+  nms <- c(".qs_alt", ".qs_try_read",
+           "ov_qs_read", "ov_qs_save", "ov_qs_exists")
+  helpers <- lapply(
+    mget(nms, envir = environment(.inject_qs_helpers), inherits = TRUE),
+    function(f) { environment(f) <- globalenv(); f }
+  )
+  RSclient::RS.assign(conn, ".ov_qs_helpers", helpers)
+  RSclient::RS.eval(conn, quote(list2env(.ov_qs_helpers, envir = globalenv())))
   invisible(NULL)
 }
 

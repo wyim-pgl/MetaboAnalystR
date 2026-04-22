@@ -270,19 +270,12 @@ CalculateQeaScore <- function(mSetObj=NA, nodeImp, method, covariates=NA){
     colnames(path.data) <- nm.map$hmdbid[kegg.inx[hit.inx]];
   }
 
-  # Normalize cls to a plain numeric vector up front. In some Read.TextData
-  # paths cls can land as a 1-row data.frame (which is a list internally),
-  # and per-column `as.numeric(mSetObj$dataSet$cls)` then fails with
-  # "'list' object cannot be coerced to type 'double'". unlist handles the
-  # list case; as.character first so factors decode via their labels, not
-  # their integer codes.
-  cls.num <- suppressWarnings(
-    as.numeric(as.character(unlist(mSetObj$dataSet$cls, use.names = FALSE)))
-  )
-  if (all(is.na(cls.num))) {
-    # disc cls like "KO"/"WT" — fall back to factor integer codes
-    cls.num <- as.numeric(as.factor(unlist(mSetObj$dataSet$cls, use.names = FALSE)))
-  }
+  # cls may arrive as a 1-row data.frame (list); unlist + as.character so both
+  # list-shaped and factor cls coerce cleanly. Discrete labels fall back to
+  # factor codes. GH #335.
+  cls.raw <- unlist(mSetObj$dataSet$cls, use.names = FALSE)
+  cls.num <- suppressWarnings(as.numeric(as.character(cls.raw)))
+  if (all(is.na(cls.num))) cls.num <- as.numeric(as.factor(cls.raw))
 
   univ.p <- apply(as.matrix(path.data), 2, function(x) {
     tmp <- try(lm(cls.num ~ x), silent = TRUE);
